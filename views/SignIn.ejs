@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sign In</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="semanticUI/semantic.min.css">
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous"></script>
+    <script src="semanticUI/semantic.min.js"></script>
+    <style>
+          body  {  
+                background: url('/images/homebk.jpg');
+                }
+          .page-login 
+          {
+          margin-top: 75px;
+          }
+    </style>
+</head>
+
+<body>
+<!-- <% include ./Partials/header.ejs %> -->
+
+<div class="page-login">
+  <div class="ui centered grid container">
+    <div class="nine wide column">
+      <div class="ui icon warning message">
+          <i class="fa fa-info-circle" aria-hidden="true" style="font-size: 40px"></i>
+          <div class="content">
+            <div class="header">
+              NESCI & BOOKS
+            </div>
+            <p>A Virtual Platform to find all books for all Semesters in NSUT College Delhi  </p>
+          </div>
+        </div>
+      <div class="ui fluid card">
+        <div class="content">
+        <form class="ui form" method="POST" action="/signIn">
+          <div class="field">
+            <label>User</label>
+            <input type="text" name="username" placeholder="User">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Password">
+          </div>
+          <button class="ui primary button" type="submit">
+            <i class="fa fa-user-circle" aria-hidden="true"></i>
+            Login
+          </button>
+        </form>
+        <div class="ui icon warning message">
+          <i ></i>
+          <div class="content">
+              New User:
+            <div class="header">
+              <a href = "/signUp"><button class="fluid ui button"><i class="fa fa-book" aria-hidden="true"></i>Sign UP For N&B</button></a>
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

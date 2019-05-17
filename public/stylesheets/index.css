@@ -1,0 +1,29 @@
+body {	
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: url('images/homebkground.jpg') !important;
+}
+
+a{
+  color: #00B7FF;
+}
+
+#jumbo{
+	padding: 50px;
+	margin-top:20%;
+	margin-left:0px;
+	margin-right: 0px;
+	text-align: center;
+ 	background: #06e8c3b5;
+	height: auto;
+}
+
+#jumboHead{
+	margin:auto;
+	width:60%;
+	font-size: 100px;
+	background: black;
+	color: white;
+	border: 5px solid black;
+	border-radius: 30px;
+	text-align: center;
+}

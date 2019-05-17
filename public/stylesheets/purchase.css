@@ -1,0 +1,11 @@
+body {  
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: url('images/homebkground.jpg') !important;
+}
+.contain{
+	border-radius: 50px;
+	padding: 40px;
+	margin: 100px auto;
+	background: #06e8c3b5;;
+	width:60%;
+}
