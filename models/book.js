@@ -8,7 +8,5 @@ var bookSchema = new mongoose.Schema({
 												branch		:  String,
 												semester	:  Number,
 												price       :  Number,
-												qtyPurchased:  Number,
-												count		:  Number
 									});
 module.exports = mongoose.model("book" , bookSchema);

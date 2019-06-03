@@ -101,7 +101,13 @@ $(document).ready(function() {
       </div>
     </div>
     <div class="item">
+      <%  if (!currentUser) { %>
+        <a class="ui button" href="/signIn">Log In</a>  
+        <a class="ui button" href="/signUp">Register</a>
+        <% } else { %>
+        <a class="ui button"> Signed In As <%=currentUser.username%> </a>
         <a class="ui button" href="/logout">Log Out</a>
+        <%  }  %>
     </div>
   </div>
 </div>

@@ -11,10 +11,20 @@ module.exports = function Cart(oldCart){
 		storedItem.qty++;
 		storedItem.price = storedItem.item.price * storedItem.qty;
 		this.totalQty++;
-		this.totalPrice += storedItem.price;
+		this.totalPrice = this.totalPrice + storedItem.item.price;
+	}
+	this.remove = function(item,id){
+
+		var storedItem = this.items[id];
+		if (storedItem){
+			storedItem.qty--;
+			storedItem.price = storedItem.item.price*storedItem.qty;
+			this.totalQty--;
+			this.totalPrice = this.totalPrice-storedItem.item.price;
+		}
 	}
 	this.generateArray =function(){
-		var arr[];
+		var arr = [];
 		for (var id in this.items){
 			arr.push(this.items[id]);
 		}

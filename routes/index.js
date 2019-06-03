@@ -2,15 +2,28 @@ var express 				= require('express');
 var router 					= express.Router();
 var mongoose 				= require('mongoose');
 var bodyParser 				= require("body-parser");
- var passport = require('passport');
-
+var passport = require('passport');
+const paypal = require('paypal-rest-sdk');
 
 mongoose.connect('mongodb://localhost/Bookdb', {useNewUrlParser: true});
 var User					= require("../models/User");
 var book 					= require("../models/book");
+var Cart 					= require("../models/cart");
 var expressValidator        = require('express-validator');
 router.use(bodyParser.urlencoded({extended: true}));
-var bookArray =[];
+var seedDB                  =require('./seed');
+seedDB();
+router.use(function(req,res,next){
+  res.locals.currentUser=req.user;
+	res.locals.session = req.session;
+	next();
+});
+
+paypal.configure({
+  'mode': 'sandbox', //sandbox or live
+  'client_id': 'AS41eR11Fn1sdsuGj1UJahkpfzFfBQIF3rjVg3Z2wArBpZx4r9W_Q9twJDgUNwiz1MTPi7rTwqM-r5GJ',
+  'client_secret': 'EPkbdtKWS640FxNYM2L9YfIhzvh45JE6P-dytD25z1QRIOxF5Oc2K5tC09jdeSydamAKqXrPqbnm5Ejf'
+});
 var cost = 0;
 
 /* GET home page. */
@@ -32,6 +45,83 @@ router.get('/signUp',function(req,res){
 	res.render("signUp");
 });
 
+router.post('/pay',function(req,res){
+	cost = req.body.totalcost;
+	const create_payment_json = {
+    "intent": "sale",
+    "payer": {
+        "payment_method": "paypal"
+    },
+    "redirect_urls": {
+        "return_url": "http://localhost:3000/success",
+        "cancel_url": "http://localhost:3000/cancel"
+    },
+   "transactions": [{
+        "item_list": {
+            "items": [{
+                "name": "Red Sox Hat",
+                "sku": "001",
+                "price": cost,
+                "currency": "USD",
+                "quantity": 1
+            }]
+        },
+        "amount": {
+            "currency": "USD",
+            "total": cost
+        },
+        "description": "Hat for the best team ever"
+    }]
+};
+
+paypal.payment.create(create_payment_json, function (error, payment) {
+  if (error) {
+      throw error;
+  } else {
+      console.log(payment);
+      for(let i = 0;i < payment.links.length;i++){
+        if(payment.links[i].rel === 'approval_url'){
+          res.redirect(payment.links[i].href);
+        }
+      }   
+  }
+});
+});
+
+router.get('/success', (req, res) => {
+  const payerId = req.query.PayerID;
+  const paymentId = req.query.paymentId;
+  
+
+  const execute_payment_json = {
+    "payer_id": payerId,
+    "transactions": [{
+        "amount": {
+            "currency": "USD",
+            "total" : cost
+        }
+    }]
+  };
+
+  paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+    if (error) {
+        console.log(error.response);
+        cost = 0;
+        throw error;
+    } else {
+        console.log(JSON.stringify(payment));
+        res.send('Payment is Successfull and Happy Reading Moments !!!');
+        cost=0;
+    }
+});
+});
+
+router.get('/cancel', (req, res) => res.send('Sorry Payment Failed please pay again'));
+
+
+
+
+
 router.post('/signUp',function(req,res){
 	User.register(new User({username: req.body.username}),req.body.password,function(err,newuser){
 		if (err)
@@ -46,16 +136,15 @@ router.post('/signUp',function(req,res){
 	});
 });
 
-router.get("/logout", function(req, res){    
+router.get("/logout", function(req, res){
+	 req.session.destroy();    
      req.logout();    
      res.redirect("/");
 });
-
-//res.render("secret",{user1:user});
-// Store and Cart Section...
-
 router.get('/store',isLoggedIn,function(req,res){
 	//Collecting ece books..
+	var cart = new Cart (req.session.cart ? req.session.cart : {items:{},totalQty:0,totalPrice:0});
+	req.session.cart = cart;
 	book.find({},function(err,doc){
 		if (err)
 			console.log("NO Book Added to store page");
@@ -65,52 +154,50 @@ router.get('/store',isLoggedIn,function(req,res){
 		}
 	});
 });
-
 router.get("/add-to-cart/:bookid",isLoggedIn,function(req,res){
-	isInArray=false;
+	var cart = new Cart (req.session.cart ? req.session.cart : {items:{},totalQty:0,totalPrice:0});
+
 	book.findOne({id:req.params.bookid},function(err,doc){
-		cost = cost + doc.price;
-		bookArray.forEach(function(item){
-			if (item.id==doc.id)
-				{
-					item.qtyPurchased = item.qtyPurchased+1;
-					isInArray=true;
-				}
-			});
-		if (!isInArray)
-		bookArray.push(doc);
+		if (err)
+		{
+			return res.redirect("/store");
+		}
+		cart.add(doc,doc.id);
+		req.session.cart = cart;
+		console.log(cart);
+		res.redirect("/store");
 	});
-	res.redirect("/store");
 });
 
 router.get("/cart",isLoggedIn,function(req,res){
-	res.render("cart",{cost:cost,bookArray:bookArray});
+	if (!req.session.cart)
+	{
+		return res.redirect("/store");
+	}
+	var cart = new Cart(req.session.cart);
+	return res.render("cart",{bookArray: cart.generateArray(),cost: cart.totalPrice});
 });
 
 router.get("/update/:bookid",isLoggedIn,function(req,res){
+	var cart = new Cart(req.session.cart);
 	book.findOne({id:req.params.bookid},function(err,doc){
 					if (err)
-						console.log(err);
+						{
+							console.log(err);
+							return res.redirect("/cart");
+						}
+
 					else
-						{			
-						bookArray.forEach(function(item,index,object){
-								if (item.id==req.params.bookid)
-								{
-										cost=cost-doc.price;
-									if (item.qtyPurchased>1)
-									{
-										item.qtyPurchased -=1;
-									}
-									else
-									{
-										object.splice(index,1);
-									}
-								}
-							});
+						{
+						  cart.remove(doc,doc.id);
+						  console.log(req.session.cart);
+						  req.session.cart = cart;
+						  
+						  res.redirect("/cart");
 						}
 				});
 	
-	res.redirect("/cart");
+	
 });
 
 
@@ -138,20 +225,11 @@ router.post("/int_createBookForm",(req,res)=>{
 												branch		:  req.body.branch,
 												semester	:  req.body.semester,
 												price       :  req.body.price,
-												qtyPurchased:  1,
-												count		:  1
 	});
-	book.findOneAndUpdate({id:req.body.id},{ $inc: { count: 1 } }, {new: true },function(err,doc){
-		if (doc==null)
-		{
-			newBook.save(function(err){
-				if (err) return console.log(err);
-			});
-		}
-		console.log(doc);
-		res.redirect("/int_createBookForm");
-	});
+					res.redirect('/int_createBookForm');
+		
 });
+
 function isLoggedIn(req, res, next) {
 if (req.isAuthenticated())
     return next();

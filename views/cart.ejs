@@ -25,27 +25,35 @@
 </head>
 <body>
 	<% include ./Partials/header.ejs %>
-	<div class="header">
-  <div class="progress-container">
-    <div class="progress-bar" id="myBar"></div>
-  </div> 
-</div>
 	<div class="contain">
 	<h1> Your Selected Books are Here!!!</h1>
 		<div class="allBooks">
 		  		<%bookArray.forEach(function(item){ %>
 		  		<div class="eachbook">
-			  			<h3> Title :<%=item.title%> ,</h3>
-			  			<h4> Author :<%=item.author%>,</h4>	
-			  			<h4> Publisher :<%=item.publisher%>, <h4>
-			  			<h4> Semester :<%=item.semester%>, </h4>
-			  			<p> Quantity Purchaased :<%=item.qtyPurchased%>, </p>	
-			  			<p> Price :<%=item.price%>, </p>
-			  			<a href="/update/<%=item.id%>" class="ui button red">Click To remove</a>
+		  				<% if (item.qty>0) { %>
+			  			<h3> Title :  <%=item.item.title%> </h3>
+			  			<h4> Author:  <%=item.item.author%></h4>	
+			  			<h4> Publisher :  <%=item.item.publisher%> <h4>
+			  			<h4> Semester :  <%=item.item.semester%> </h4>
+			  			<p> Quantity Purchaased :  <%=item.qty%> </p>	
+			  			<p> Price :  <%=item.item.price%>  </p>
+			  			<a href="/update/<%=item.item.id%>" class="ui button red">Click To remove</a>
 			  	</div>
+			  			<% }  %>
 			  	<%});%>	
-				<h2> Total Price : <%=cost %> </h2>	  		
-  <div id="paypal-button-container" class="ui huge button blue"> Pay </div>
+			  	
+ 
+				
+				<form action="/pay" method="POST">
+  			    
+  			    <div class="ui left action input">
+  			     <button onclick="submit" class="ui grey labeled icon large button">
+				    Pay With PayPal
+				  </button>
+				  <input type="text" name="totalcost" value = <%=cost%> readonly >
+				</div>
+  				
+				</form>
 		</div>
 	</div>  	
 </body>
