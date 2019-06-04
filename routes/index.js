@@ -4,15 +4,14 @@ var mongoose 				= require('mongoose');
 var bodyParser 				= require("body-parser");
 var passport = require('passport');
 const paypal = require('paypal-rest-sdk');
-
-mongoose.connect('mongodb://localhost/Bookdb', {useNewUrlParser: true});
+mongoose.connect("mongodb://localhost/Bookdb");
 var User					= require("../models/User");
 var book 					= require("../models/book");
 var Cart 					= require("../models/cart");
 var expressValidator        = require('express-validator');
 router.use(bodyParser.urlencoded({extended: true}));
-var seedDB                  =require('./seed');
-seedDB();
+// var seedDB                  =require('./seed');
+// seedDB();
 router.use(function(req,res,next){
   res.locals.currentUser=req.user;
 	res.locals.session = req.session;
@@ -131,6 +130,8 @@ router.post('/signUp',function(req,res){
 		}
 		console.log(newuser);
 		passport.authenticate("local")(req,res,function(){
+			req.session.username = req.body.username;
+		    req.session.password = req.body.password;
 			res.redirect('/store');
 		});
 	});
@@ -236,5 +237,6 @@ if (req.isAuthenticated())
 else
     res.redirect('/');
 }
+
 
 module.exports = router;

@@ -3,7 +3,13 @@ var express = require('express');
 var path = require('path');
 
 var mongoose 				= require('mongoose');
-mongoose.connect('mongodb://localhost/Bookdb', {useNewUrlParser: true});
+// const MongoClient = require(‘mongodb’).MongoClient;
+// const uri = "mongodb+srv://admin:<qlzpam22%24>@cluster0-nglwm.mongodb.net/test?retryWrites=true&w=majority";
+// const client = new MongoClient(uri, { useNewUrlParser: true });
+// client.connect(err => {
+//   const collection = client.db("test").collection("devices");
+//   // perform actions on the collection object
+
 
 var passport 				= require('passport');
 var bodyParser 				= require("body-parser");
@@ -25,13 +31,15 @@ app.use(session({
   store: new MongoStore({ mongooseConnection: mongoose.connection }),
   cookie:{ maxAge: 180*60*1000 }
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(function(req,res,next){
-	res.locals.login = req.isAuthenticated();
+  res.locals.currentUser=req.user;
 	res.locals.session = req.session;
 	next();
 });
+
 
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
@@ -64,4 +72,9 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+//   client.close();
+// });
+
 module.exports = app;
