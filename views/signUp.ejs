@@ -29,6 +29,12 @@
 
 </head>
 <body>
+<% include ./Partials/header.ejs %>
+<script type="text/javascript">
+  var error = <%=showAlert%>
+  if(error!=null) 
+    alert("User Already Exist !");
+</script>
 
     <div class ="contain">
 <h1><i class="fa fa-book" aria-hidden="true"></i> REGISTER FOR NESCI & BOOKS  </h1>
